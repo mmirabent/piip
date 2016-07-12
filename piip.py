@@ -17,3 +17,6 @@ def hello_world():
         remote_ip = request.remote_addr
         return 'Put\'d'
 
+if __name__ == "__main__":
+    application.run(host='0.0.0.0')
+
