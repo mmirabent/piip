@@ -6,6 +6,15 @@ simply sends a PUT request to the server. The server, upon receiving this
 PUT request, takes note of the client's IP address and serves this up with GET
 requests.
 
+## Setting up the sqlite db
+
+This must be done if you don't already have an sqlite db
+
+```
+sqlite3 piip.db < schema.sql
+```
+
+
 ## How to make CentOS happy with this
 
 I'm serving this with centos using uwsgi and nginx. IN order to make this
