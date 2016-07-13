@@ -6,6 +6,17 @@ simply sends a PUT request to the server. The server, upon receiving this
 PUT request, takes note of the client's IP address and serves this up with GET
 requests.
 
+## Setting up the virtual environment
+
+These commands are to set up the virtualenv that the app will run with
+
+```
+virtualenv --no-site-packages piipenv
+source piipenv/bin/activate
+pip install -r requirements.txt
+deactivate
+```
+
 ## Setting up the sqlite db
 
 This must be done if you don't already have an sqlite db
