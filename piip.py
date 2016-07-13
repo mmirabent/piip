@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, request, session,g,redirect,url_for,abort,render_template,flash
+from flask import Flask, request, session,g,redirect,url_for,abort,render_template,flash,make_response
 app = Flask(__name__)
 app.config.from_object(__name__)
 
@@ -32,21 +32,37 @@ def get_db():
 remote_ip = None
 
 @app.route('/')
-def show_entries():
+def show_ips():
     db = get_db()
-    cur = db.execute('select title, text from entries order by id desc')
+    cur = db.execute('select title, ip from entries order by id desc')
     entries = cur.fetchall()
-    return render_template('show_entries.html',entries=entries)
+    return render_template('show_ips.html',entries=entries)
 
 @app.route('/add', methods=['POST'])
 def add_entry():
     if not session.get('logged_in'):
         abort(401)
     db = get_db()
-    db.execute('insert into entries (title, text) values (?, ?)', [request.form['title'], request.form['text']])
+    db.execute('insert into entries (title, ip, secret) values (?, ?, ?)', [request.form['title'], '0.0.0.0','SUPER SERIAL'])
     db.commit()
     flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
+    return redirect(url_for('show_ips'))
+
+@app.route('/<string:title>', methods=['GET', 'PUT'])
+def show_ip(title):
+    if request.method == 'GET':
+        db = get_db()
+        cur = db.execute('select title, ip, secret from entries where title = ?',[title])
+        entry = cur.fetchone()
+        return render_template('show_ip.html',entry=entry)
+    
+    elif request.method == 'PUT':
+        db = get_db()
+        ip = request.remote_addr
+        db.execute('UPDATE entries SET ip = ? WHERE title = ?', [ip,title])
+        db.commit()
+        return make_response("%s" % ip)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -59,14 +75,14 @@ def login():
         else:
             session['logged_in'] = True
             flash('You were logged in')
-            return redirect(url_for('show_entries'))
+            return redirect(url_for('show_ips'))
     return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
-    return redirect(url_for('show_entries'))
+    return redirect(url_for('show_ips'))
 
 
 """
