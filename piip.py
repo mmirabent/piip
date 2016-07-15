@@ -1,4 +1,5 @@
 import os
+import base64
 import sqlite3
 from flask import Flask, request, session,g,redirect,url_for,abort,render_template,flash,make_response
 app = Flask(__name__)
@@ -43,7 +44,8 @@ def add_entry():
     if not session.get('logged_in'):
         abort(401)
     db = get_db()
-    db.execute('insert into entries (title, ip, secret) values (?, ?, ?)', [request.form['title'], '0.0.0.0','SUPER SERIAL'])
+    secret = base64.b32encode(os.urandom(25))
+    db.execute('insert into entries (title, ip, secret) values (?, ?, ?)', [request.form['title'], '0.0.0.0',secret])
     db.commit()
     flash('New entry was successfully posted')
     return redirect(url_for('show_ips'))
@@ -51,13 +53,23 @@ def add_entry():
 @app.route('/<string:title>', methods=['GET', 'PUT'])
 def show_ip(title):
     if request.method == 'GET':
+        if not session.get('logged_in'):
+            abort(401)
         db = get_db()
         cur = db.execute('select title, ip, secret from entries where title = ?',[title])
         entry = cur.fetchone()
         return render_template('show_ip.html',entry=entry)
     
     elif request.method == 'PUT':
+        if not request.authorization:
+            abort(401)
         db = get_db()
+        cur = db.execute('select title, ip, secret from entries where title = ?',[title])
+        entry = cur.fetchone()
+
+        if not entry['secret'] == request.authorization.password:
+            abort(401)
+
         ip = request.remote_addr
         db.execute('UPDATE entries SET ip = ? WHERE title = ?', [ip,title])
         db.commit()
