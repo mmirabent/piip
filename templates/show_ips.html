@@ -11,7 +11,16 @@
   {% endif %}
   <ul class="entries">
   {% for entry in entries %}
-    <li><h2>{{ entry.title }}</h2>{{ entry.ip }}
+  <li>
+    <h2>
+      {% if session.logged_in %}
+        <a href="/{{ entry.title }}">
+      {% endif %}
+        {{ entry.title }}
+      {% if session.logged_in %}
+        </a>
+      {% endif %}
+      </h2>{{ entry.ip }}
   {% endfor %}
   </ul>
 {% endblock %}

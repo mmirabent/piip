@@ -43,11 +43,14 @@ def show_ips():
 def add_entry():
     if not session.get('logged_in'):
         abort(401)
+    if not request.form['title']:
+        flash(u'missing title', 'error')
+        return redirect(url_for('show_ips'))
     db = get_db()
     secret = base64.b32encode(os.urandom(25))
     db.execute('insert into entries (title, ip, secret) values (?, ?, ?)', [request.form['title'], '0.0.0.0',secret])
     db.commit()
-    flash('New entry was successfully posted')
+    flash(u'New entry was successfully posted')
     return redirect(url_for('show_ips'))
 
 @app.route('/<string:title>', methods=['GET', 'PUT'])
@@ -75,25 +78,38 @@ def show_ip(title):
         db.commit()
         return make_response("%s" % ip)
 
+@app.route('/<string:title>/delete', methods=['GET'])
+def delete_ip(title):
+    if not session.get('logged_in'):
+        abort(401)
+
+    db = get_db()
+    cur = db.execute('SELECT title FROM entries WHERE title = ?',[title])
+
+    if not cur.fetchone():
+        abort(404)
+
+    db.execute('DELETE FROM entries WHERE title = ?',[title])
+    db.commit()
+    return redirect(url_for('show_ips'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
     if request.method == 'POST':
         if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
+            flash(u'Invalid username','error')
         elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
+            flash(u'Invalid password','error')
         else:
             session['logged_in'] = True
-            flash('You were logged in')
+            flash(u'You were logged in')
             return redirect(url_for('show_ips'))
-    return render_template('login.html', error=error)
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('You were logged out')
+    flash(u'You were logged out')
     return redirect(url_for('show_ips'))
 
 

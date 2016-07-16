@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
-  <ul class="entries">
-      {% if entry %}
-  <li><h2>{{ entry.title }}</h2>{{ entry.ip }} {{ entry.secret}}
-  {% endif %}
-  </ul>
+ <ul class="entries">
+{% if entry %}
+<li><h2>{{ entry.title }}</h2></li>
+<li>{{ entry.ip }}</li>
+<li>{{ entry.secret }}</li>
+<li><a href="/{{ entry.title }}/delete">delete</a></li>
+{% endif %}
+ </ul>
 {% endblock %}
