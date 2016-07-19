@@ -8,7 +8,17 @@ control panel that displays all the tracked IP addresses
 
 ## Installing on a fresh CentOS or EL system
 
-Prerequisites
+### Pre-prerequisites
+
+You need the epel-release repos installed...
+
+```
+# yum install epel-release
+```
+
+### Prerequisites
+
+`yum install` these things
 
 * uwsgi
 * uwsgi-plugin-python
@@ -16,6 +26,10 @@ Prerequisites
 * python-devel
 * nginx
 * gcc
+
+```
+# yum install uwsgi uwsgi-plugin-python python-pip python-devel nginx gcc
+```
 
 If cloning from git, you'll need that too.
 
@@ -26,10 +40,11 @@ should be run within the app folder. I located this folder at /opt/piip.
 Wherever you choose to locate the python code, run this there.
 
 ```
-virtualenv --no-site-packages piipenv
-source piipenv/bin/activate
-pip install -r requirements.txt
-deactivate
+# pip install virtualenv
+# virtualenv --no-site-packages piipenv
+# source piipenv/bin/activate
+# pip install -r requirements.txt
+# deactivate
 ```
 
 ### Setting up the sqlite db
@@ -37,7 +52,17 @@ deactivate
 This should also be run from the same app folder as above
 
 ```
-sqlite3 piip.db < schema.sql
+# sqlite3 piip.db < schema.sql
+```
+
+### Permissions
+
+In order for uwsgi to work properly, the uwsgi user must own the /opt/piip
+directory and the piip.ini file.
+
+```
+# chown -R uwsgi:uwsgi /opt/piip
+# chown uwsgi:uwsgi /etc/uwsgi.d/piip.ini
 ```
 
 ### How to make CentOS happy with this
@@ -94,4 +119,15 @@ http {
 
 ```
 
+### SELinux
+
+The easy way to fix this is to just turn the damn thing off. If that isn't quite
+your speed, you can follow the instructions on
+[this](http://stackoverflow.com/questions/23948527/13-permission-denied-while-connecting-to-upstreamnginx)
+stack overflow answer to fix them. In short,
+
+```
+# cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
+# sudo semodule -i mynginx.pp
+```
 
