@@ -3,12 +3,27 @@
 The purpose of this is to enable knowing what the public IP address is of a
 raspberry pi sitting on a home network. It works in two parts. The client
 simply sends a PUT request to the server. The server, upon receiving this
-PUT request, takes note of the client's IP address and serves this up with GET
-requests.
+PUT request, takes note of the client's IP address and serves this up on a
+control panel that displays all the tracked IP addresses
 
-## Setting up the virtual environment
+## Installing on a fresh CentOS or EL system
 
-These commands are to set up the virtualenv that the app will run with
+Prerequisites
+
+* uwsgi
+* uwsgi-plugin-python
+* python-pip
+* python-devel
+* nginx
+* gcc
+
+If cloning from git, you'll need that too.
+
+### Setting up the virtual environment
+
+These commands are to set up the virtualenv that the app will run with. Thet
+should be run within the app folder. I located this folder at /opt/piip.
+Wherever you choose to locate the python code, run this there.
 
 ```
 virtualenv --no-site-packages piipenv
@@ -17,41 +32,24 @@ pip install -r requirements.txt
 deactivate
 ```
 
-## Setting up the sqlite db
+### Setting up the sqlite db
 
-This must be done if you don't already have an sqlite db
+This should also be run from the same app folder as above
 
 ```
 sqlite3 piip.db < schema.sql
 ```
 
+### How to make CentOS happy with this
 
-## How to make CentOS happy with this
-
-I'm serving this with centos using uwsgi and nginx. IN order to make this
-happen, you need a couple things first
-
-* uwsgi
-* uwsgi-plugin-python
-* python-pip
-* python-devel
-* nginx
-* gcc(maybe?)
-
-The high level architecture is as such. python files are in /opt/piip. When you
-install uwsgi, it installs it in emperor mode. In order to deploy your apps,
-you need to add an appropriate .ini file to `/etc/uwsgi.d/`. This file is
-included as piip.ini. uwsgi will create a socket in /run/uwsgi called
-piip.sock. Nginx will use this socket to communicate with the uwsgi process.
-Because uwsgi creates this socket and nginx has to consume it, we need to run
-nginx as the uwsgi user. I did this by changing the user line as the top of the
-nginx conf file. I also had to disable the default nginx config and adding a
-simple config for just the uwsgi server.  Examples below. I also created a
-virtual environment with flask. The virtualenv is included in the gitrepo.
-Though it probbale shouldn't I followed
-[this](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-uwsgi-and-nginx-on-centos-7)
-guide for the most part, though I didn't write my own service file, I used the
-uwsgi emperor mode instead.
+I'm serving this with centos using uwsgi and nginx. The high level architecture
+is as such. python files are in /opt/piip. When you install uwsgi, it installs
+it in emperor mode. In order to deploy your apps, you need to add an appropriate
+.ini file to `/etc/uwsgi.d/`. This file is included as piip.ini. uwsgi will
+create a socket in /run/uwsgi called piip.sock. Nginx will use this socket to
+communicate with the uwsgi process.  Because uwsgi creates this socket and nginx
+has to consume it, we need to run nginx as the uwsgi user. I did this by
+changing the user line as the top of the nginx conf file.
 
 ```
 user uwsgi;
@@ -93,28 +91,6 @@ http {
             include uwsgi_params;
         }
     }
-
-#    server {
-#        listen       80 default_server;
-#        listen       [::]:80 default_server;
-#        server_name  _;
-#        root         /usr/share/nginx/html;
-#
-#        # Load configuration files for the default server block.
-#        include /etc/nginx/default.d/*.conf;
-#
-#        location / {
-#        }
-#
-#        error_page 404 /404.html;
-#            location = /40x.html {
-#        }
-#
-#        error_page 500 502 503 504 /50x.html;
-#            location = /50x.html {
-#        }
-#    }
-}
 
 ```
 
