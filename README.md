@@ -131,3 +131,11 @@ stack overflow answer to fix them. In short,
 # sudo semodule -i mynginx.pp
 ```
 
+### More Security
+
+This project pretty much depends on SSL to keep it secure. It's now actually
+easier to get a proper cert from letsencrypt than to roll your own. So just
+[follow the
+instructions](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-centos-7).
+
+
