@@ -123,6 +123,7 @@ def login():
         user = cur.fetchone();
         if not user or not password == user['password']:
             flash(u'Bad username or password','error')
+            return render_template('login.html')
 
         session['logged_in'] = True
         flash(u'You were logged in')
