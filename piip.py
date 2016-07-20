@@ -115,13 +115,13 @@ def login():
     if request.method == 'POST':
         if request.form == None or request.form['username'] == None or request.form['password'] == None:
             abort(400)
-        user = request.form['username']
-        pass = request.form['password']
+        username = request.form['username']
+        password = request.form['password']
 
-        cur = db.execute('SELECT username FROM users WHERE username = ?',[user])
+        cur = db.execute('SELECT username, password FROM users WHERE username = ?',[username])
 
         user = cur.fetchone();
-        if not user or not pass == user.password:
+        if not user or not password == user.password:
             flash(u'Bad username or password','error')
 
         session['logged_in'] = True
