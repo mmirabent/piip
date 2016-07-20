@@ -113,7 +113,7 @@ def delete_ip(title):
 def login():
     db = get_db();
     if request.method == 'POST':
-        if request.form == None or request.form['username'] == None or request.form['password'] == None
+        if request.form == None or request.form['username'] == None or request.form['password'] == None:
             abort(400)
         user = request.form['username']
         pass = request.form['password']
