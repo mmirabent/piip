@@ -121,7 +121,7 @@ def login():
         cur = db.execute('SELECT username, password FROM users WHERE username = ?',[username])
 
         user = cur.fetchone();
-        if not user or not password == user.password:
+        if not user or not password == user['password']:
             flash(u'Bad username or password','error')
 
         session['logged_in'] = True
