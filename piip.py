@@ -111,15 +111,23 @@ def delete_ip(title):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    db = get_db();
     if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
-            flash(u'Invalid username','error')
-        elif request.form['password'] != app.config['PASSWORD']:
-            flash(u'Invalid password','error')
-        else:
-            session['logged_in'] = True
-            flash(u'You were logged in')
-            return redirect(url_for('show_ips'))
+        if request.form == None or request.form['username'] == None or request.form['password'] == None:
+            abort(400)
+        username = request.form['username']
+        password = request.form['password']
+
+        cur = db.execute('SELECT username, password FROM users WHERE username = ?',[username])
+
+        user = cur.fetchone();
+        if not user or not password == user['password']:
+            flash(u'Bad username or password','error')
+            return render_template('login.html')
+
+        session['logged_in'] = True
+        flash(u'You were logged in')
+        return redirect(url_for('show_ips'))
     return render_template('login.html')
 
 @app.route('/logout')
