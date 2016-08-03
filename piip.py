@@ -15,6 +15,7 @@ specific language governing permissions and limitations under the License.
 
 
 import os
+import json
 import base64
 import sqlite3
 from flask import Flask, request, session,g,redirect,url_for,abort,render_template,flash,make_response
@@ -72,12 +73,18 @@ def add_entry():
 @app.route('/<string:title>', methods=['GET', 'PUT'])
 def show_ip(title):
     if request.method == 'GET':
-        if not session.get('logged_in'):
-            abort(401)
         db = get_db()
         cur = db.execute('select title, ip, secret from entries where title = ?',[title])
         entry = cur.fetchone()
-        return render_template('show_ip.html',entry=entry)
+        if request.is_json:
+            entry_hash = {};
+            entry_hash['title'] = entry['title'];
+            entry_hash['ip'] = entry['ip'];
+            return json.dumps(entry_hash)
+        elif not session.get('logged_in'):
+            abort(401)
+        else:
+            return render_template('show_ip.html',entry=entry)
     
     elif request.method == 'PUT':
         if not request.authorization:
